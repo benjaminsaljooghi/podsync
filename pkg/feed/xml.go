@@ -23,7 +23,11 @@ func (p timeSlice) Len() int {
 
 // In descending order
 func (p timeSlice) Less(i, j int) bool {
-	return p[i].PubDate.After(p[j].PubDate)
+	item1, _ := strconv.Atoi(p[i].Order)
+	item2, _ := strconv.Atoi(p[j].Order)
+	return item1 > item2
+	// return strconv.Atoi(p[i].Order) < strconv.Atoi(p[j].Order)
+	// return p[i].PubDate.After(p[j].PubDate)
 }
 
 func (p timeSlice) Swap(i, j int) {
@@ -96,10 +100,11 @@ func Build(ctx context.Context, feed *model.Feed, cfg *config.Feed, provider url
 		}
 	}
 
-	// Sort all episodes in descending order
+	// // Sort all episodes in descending order
+	// Sort all episodes in order position
 	sort.Sort(timeSlice(feed.Episodes))
 
-	for i, episode := range feed.Episodes {
+	for _, episode := range feed.Episodes {
 		if episode.Status != model.EpisodeDownloaded {
 			// Skip episodes that are not yet downloaded
 			continue
@@ -112,7 +117,8 @@ func Build(ctx context.Context, feed *model.Feed, cfg *config.Feed, provider url
 			Description: episode.Description,
 			ISubtitle:   episode.Title,
 			// Some app prefer 1-based order
-			IOrder: strconv.Itoa(i + 1),
+			// IOrder: strconv.Itoa(i + 1),
+			IOrder: episode.Order,
 		}
 
 		item.AddPubDate(&episode.PubDate)
